@@ -1,0 +1,14 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# C++
+cpp/build/
+*.o
+
+# Runtime state (both implementations write this next to the binary)
+highscore.json
+.claude/
+CLAUDE.md
