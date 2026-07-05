@@ -28,6 +28,7 @@ add_library(snake_core STATIC
     src/snake.cpp
     src/food.cpp
     src/highscore.cpp
+    src/replay.cpp
     src/ai/pathfinding.cpp
     src/ai/hamiltonian.cpp
     src/ai/snake_ai.cpp
@@ -61,6 +62,7 @@ add_executable(snake_tests
     tests/test_pathfinding.cpp
     tests/test_hamiltonian.cpp
     tests/test_snake_ai.cpp
+    tests/test_replay.cpp
 )
 target_include_directories(snake_tests PRIVATE third_party)
 target_link_libraries(snake_tests PRIVATE snake_core)
