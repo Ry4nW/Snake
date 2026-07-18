@@ -17,6 +17,15 @@ const char* HeadSpriteFor(Direction d) {
 
 Vector2 ToVector2(config::PixelPos p) { return Vector2{static_cast<float>(p.x), static_cast<float>(p.y)}; }
 
+Vector2 LerpPixel(const Cell& from, const Cell& to, float alpha) {
+    config::PixelPos p0 = config::CellToPixel(from);
+    config::PixelPos p1 = config::CellToPixel(to);
+    return Vector2{
+        static_cast<float>(p0.x) + (static_cast<float>(p1.x) - static_cast<float>(p0.x)) * alpha,
+        static_cast<float>(p0.y) + (static_cast<float>(p1.y) - static_cast<float>(p0.y)) * alpha,
+    };
+}
+
 }  // namespace
 
 Renderer::Renderer(const SpriteSheet& sprites, const OwnedTexture& trophy)
@@ -43,13 +52,15 @@ void Renderer::DrawFood(const std::vector<Cell>& food) const {
     }
 }
 
-void Renderer::DrawSnake(const Snake& snake) const {
+void Renderer::DrawSnake(const std::deque<Cell>& previousBody, const Snake& snake, float alpha) const {
+    const std::deque<Cell>& currentBody = snake.Body();
     Vector2 size{static_cast<float>(config::CellSize), static_cast<float>(config::CellSize)};
     const char* headSprite = HeadSpriteFor(snake.CurrentDirection());
-    bool isHead = true;
-    for (const Cell& cell : snake.Body()) {
-        sprites_.Draw(isHead ? headSprite : "body", ToVector2(config::CellToPixel(cell)), size);
-        isHead = false;
+
+    for (std::size_t i = 0; i < currentBody.size(); ++i) {
+        Vector2 position = (i < previousBody.size()) ? LerpPixel(previousBody[i], currentBody[i], alpha)
+                                                       : ToVector2(config::CellToPixel(currentBody[i]));
+        sprites_.Draw(i == 0 ? headSprite : "body", position, size);
     }
 }
 
@@ -65,5 +76,25 @@ void Renderer::DrawHud(int score, int highScore, bool aiActive) const {
 
     if (aiActive) {
         DrawText("AI", 900, 10, 30, colors::AiTag);
+    }
+}
+
+void Renderer::DrawAIDebug(const AIDebugInfo& debug) const {
+    Vector2 size{static_cast<float>(config::CellSize), static_cast<float>(config::CellSize)};
+
+    for (const Cell& cell : debug.floodFillRegion) {
+        DrawRectangleV(ToVector2(config::CellToPixel(cell)), size, colors::DebugFloodFill);
+    }
+
+    if (!debug.consideredPathSafe) {
+        for (const Cell& cell : debug.consideredPath) {
+            DrawRectangleV(ToVector2(config::CellToPixel(cell)), size, colors::DebugPathUnsafe);
+        }
+    }
+
+    Color chosenColor =
+        debug.strategy == AIDebugInfo::Strategy::TailChase ? colors::DebugTailChase : colors::DebugPathSafe;
+    for (const Cell& cell : debug.chosenPath) {
+        DrawRectangleV(ToVector2(config::CellToPixel(cell)), size, chosenColor);
     }
 }
