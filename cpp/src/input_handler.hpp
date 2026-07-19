@@ -5,7 +5,7 @@
 
 #include "direction.hpp"
 
-enum class CommandType { Direction, ToggleAi, ToggleAiMode, Quit };
+enum class CommandType { Direction, ToggleAi, ToggleAiMode, ToggleDebug, Quit };
 
 struct Command {
     CommandType type;

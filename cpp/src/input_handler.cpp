@@ -21,6 +21,7 @@ std::vector<Command> InputHandler::Poll() const {
     }
     if (IsKeyPressed(KEY_TAB)) commands.push_back(Command{CommandType::ToggleAi});
     if (IsKeyPressed(KEY_H)) commands.push_back(Command{CommandType::ToggleAiMode});
+    if (IsKeyPressed(KEY_V)) commands.push_back(Command{CommandType::ToggleDebug});
 
     return commands;
 }
