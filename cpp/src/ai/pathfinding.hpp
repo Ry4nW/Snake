@@ -23,6 +23,10 @@ std::optional<std::vector<Cell>> AStarPath(const Cell& start, const Cell& goal,
                                             const std::unordered_set<Cell, CellHash>& blocked, int cols,
                                             int rows);
 
+// all cells reachable from start, start included
+std::vector<Cell> FloodFillRegion(const Cell& start, const std::unordered_set<Cell, CellHash>& blocked,
+                                   int cols, int rows);
+
 // reachable cell count, cheap proxy for available space
 int FloodFillCount(const Cell& start, const std::unordered_set<Cell, CellHash>& blocked, int cols,
                     int rows);

@@ -110,26 +110,31 @@ std::optional<std::vector<Cell>> AStarPath(const Cell& start, const Cell& goal,
     return std::nullopt;
 }
 
-int FloodFillCount(const Cell& start, const std::unordered_set<Cell, CellHash>& blocked, int cols,
-                    int rows) {
-    if (blocked.count(start)) return 0;
+std::vector<Cell> FloodFillRegion(const Cell& start, const std::unordered_set<Cell, CellHash>& blocked,
+                                   int cols, int rows) {
+    if (blocked.count(start)) return {};
 
     std::unordered_set<Cell, CellHash> visited{start};
     std::queue<Cell> frontier;
     frontier.push(start);
-    int count = 0;
+    std::vector<Cell> region;
 
     while (!frontier.empty()) {
         Cell current = frontier.front();
         frontier.pop();
-        count++;
+        region.push_back(current);
         for (const Cell& next : Neighbors(current, cols, rows)) {
             if (visited.count(next) || blocked.count(next)) continue;
             visited.insert(next);
             frontier.push(next);
         }
     }
-    return count;
+    return region;
+}
+
+int FloodFillCount(const Cell& start, const std::unordered_set<Cell, CellHash>& blocked, int cols,
+                    int rows) {
+    return static_cast<int>(FloodFillRegion(start, blocked, cols, rows).size());
 }
 
 Direction DirectionBetween(const Cell& a, const Cell& b) {
