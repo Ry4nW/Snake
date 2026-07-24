@@ -10,7 +10,12 @@ SnakeAI::SnakeAI(int cols, int rows) : cols_(cols), rows_(rows) {}
 
 std::optional<Direction> SnakeAI::Decide(const Snake& snake, const std::vector<Cell>& food,
                                           bool useHamiltonian) {
-    if (useHamiltonian) return DecideHamiltonian(snake);
+    debug_ = AIDebugInfo{};
+
+    if (useHamiltonian) {
+        debug_.strategy = AIDebugInfo::Strategy::Hamiltonian;
+        return DecideHamiltonian(snake);
+    }
 
     const std::deque<Cell>& body = snake.Body();
     const Cell& head = body.front();
@@ -19,8 +24,14 @@ std::optional<Direction> SnakeAI::Decide(const Snake& snake, const std::vector<C
     if (target) {
         std::unordered_set<Cell, CellHash> blocked(body.begin(), body.end() - 1);
         auto path = pathfinding::AStarPath(head, *target, blocked, cols_, rows_);
-        if (path && path->size() > 1 && SafeAfter(body, *path)) {
-            return pathfinding::DirectionBetween((*path)[0], (*path)[1]);
+        if (path) {
+            debug_.consideredPath = *path;
+            debug_.consideredPathSafe = path->size() > 1 && SafeAfter(body, *path);
+            if (debug_.consideredPathSafe) {
+                debug_.strategy = AIDebugInfo::Strategy::SafeAStar;
+                debug_.chosenPath = *path;
+                return pathfinding::DirectionBetween((*path)[0], (*path)[1]);
+            }
         }
     }
 
@@ -62,30 +73,38 @@ bool SnakeAI::SafeAfter(const std::deque<Cell>& body, const std::vector<Cell>& p
     return pathfinding::BfsPath(head, tail, blocked, cols_, rows_).has_value();
 }
 
-std::optional<Direction> SnakeAI::ChaseTail(const std::deque<Cell>& body) const {
+std::optional<Direction> SnakeAI::ChaseTail(const std::deque<Cell>& body) {
     const Cell& head = body.front();
     const Cell& tail = body.back();
     std::unordered_set<Cell, CellHash> blocked(body.begin(), body.end() - 1);
     auto path = pathfinding::BfsPath(head, tail, blocked, cols_, rows_);
     if (path && path->size() > 1) {
+        debug_.strategy = AIDebugInfo::Strategy::TailChase;
+        debug_.chosenPath = *path;
         return pathfinding::DirectionBetween((*path)[0], (*path)[1]);
     }
     return std::nullopt;
 }
 
-std::optional<Direction> SnakeAI::SafestMove(const std::deque<Cell>& body) const {
+std::optional<Direction> SnakeAI::SafestMove(const std::deque<Cell>& body) {
     const Cell& head = body.front();
     std::unordered_set<Cell, CellHash> blocked(body.begin(), body.end() - 1);
 
     std::optional<Direction> bestDirection;
     int bestSpace = -1;
+    std::vector<Cell> bestRegion;
     for (const Cell& next : pathfinding::Neighbors(head, cols_, rows_)) {
         if (blocked.count(next)) continue;
-        int space = pathfinding::FloodFillCount(next, blocked, cols_, rows_);
-        if (space > bestSpace) {
-            bestSpace = space;
+        std::vector<Cell> region = pathfinding::FloodFillRegion(next, blocked, cols_, rows_);
+        if (static_cast<int>(region.size()) > bestSpace) {
+            bestSpace = static_cast<int>(region.size());
             bestDirection = pathfinding::DirectionBetween(head, next);
+            bestRegion = std::move(region);
         }
+    }
+    if (bestDirection) {
+        debug_.strategy = AIDebugInfo::Strategy::FloodFillSurvival;
+        debug_.floodFillRegion = std::move(bestRegion);
     }
     return bestDirection;
 }
