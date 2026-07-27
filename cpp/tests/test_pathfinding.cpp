@@ -41,7 +41,7 @@ TEST_CASE("astar returns nothing when unreachable") {
 }
 
 TEST_CASE("flood fill counts an enclosed region correctly") {
-    // A wall at col 2 splits a 5x5 grid into two 2-wide pockets.
+    // wall at col 2 splits 5x5 grid into two 2-wide pockets
     std::unordered_set<Cell, CellHash> blocked;
     for (int y = 0; y < 5; ++y) blocked.insert(Cell{2, y});
     CHECK(FloodFillCount(Cell{0, 0}, blocked, 5, 5) == 10);

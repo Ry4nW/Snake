@@ -22,7 +22,7 @@ TEST_CASE("grow delays the tail pop by one tick") {
 TEST_CASE("cannot reverse directly into its own neck") {
     Snake snake(Cell{5, 5}, Direction::Right);
     snake.Grow();
-    snake.Advance();  // length 2 now, so reversing would hit its own body
+    snake.Advance();  // now length 2, reversing would hit its own body
     snake.SetDirection(Direction::Left);
     CHECK(snake.CurrentDirection() == Direction::Right);
 }

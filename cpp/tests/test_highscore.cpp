@@ -7,7 +7,7 @@
 
 namespace {
 
-// A unique, non-colliding scratch path per test run.
+// unique scratch path per test run
 std::string TempPath() {
     static int counter = 0;
     return "test_highscore_" + std::to_string(counter++) + ".json";

@@ -10,8 +10,7 @@ TEST_CASE("heads toward food on an open board") {
 }
 
 TEST_CASE("safe-after rejects a path that would seal off the tail") {
-    // 3x2 grid where the body already walls off a 2-cell pocket
-    // containing the food; the only way in is also the only way out.
+    // 3x2 grid, body walls off a 2-cell pocket with the food, one way in/out
     //   (0,0) (1,0)=head (2,0)=tail
     //   (0,1) (1,1)=body (2,1)=body
     SnakeAI ai(3, 2);
@@ -28,8 +27,8 @@ TEST_CASE("decide avoids the trap and chases its tail instead") {
     auto direction = ai.Decide(snake, {Cell{0, 0}});
 
     REQUIRE(direction.has_value());
-    CHECK(*direction != Direction::Left);   // would walk into the dead end
-    CHECK(*direction == Direction::Right);  // chases the tail instead
+    CHECK(*direction != Direction::Left);   // dead end
+    CHECK(*direction == Direction::Right);  // chases tail instead
 }
 
 TEST_CASE("hamiltonian mode always returns a legal next step") {
